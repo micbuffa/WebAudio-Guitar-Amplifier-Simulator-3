@@ -1,0 +1,118 @@
+
+canvas {
+  background-color:black;
+}
+.ampGUI {
+  margin: 30px;
+  /*box-shadow: 10px 10px 5px grey;*/
+}
+
+div audio {
+  display: block;
+  margin-bottom:10px;
+}
+
+@keyframes pulse_animation {
+  0% { transform: scale(1); }
+  30% { transform: scale(1); }
+  40% { transform: scale(1.08); }
+  50% { transform: scale(1); }
+  60% { transform: scale(1); }
+  70% { transform: scale(1.05); }
+  80% { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+.pulse {
+  animation-name: pulse_animation;
+  animation-duration: 5000ms;
+  transform-origin:70% 70%;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+.eq {
+  margin: 32px;
+  border:1px solid;
+  border-radius:15px;
+  background-color:lightGrey;
+  padding:10px;
+  width:300px;
+  box-shadow: 10px 10px 5px grey;
+  text-align:center;
+  font-family: "Open Sans";
+  font-size: 12px;
+}
+/*
+.ampGUI {
+  transition:all 1s;
+  transform:scale(0.2, 0.2);
+}
+.ampGUI:hover {
+  transform:scale(1, 1);
+}
+*/
+div.controls:hover {
+  color:blue;
+  font-weight:bold;
+}
+div.controls label {
+  display: inline-block;
+  text-align: center;
+  width: 50px;
+}
+
+div.controls label, div.controls input, output {
+    vertical-align: middle;
+    padding: 0;
+    margin: 0;
+   font-family: "Open Sans",Verdana,Geneva,sans-serif,sans-serif;
+  font-size: 12px;
+}
+
+/* --- ON OFF --- */
+.onoffswitch {
+    position: relative; width: 199px;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+}
+.onoffswitch-checkbox {
+    display: none;
+}
+.onoffswitch-label {
+    display: block; overflow: hidden; cursor: pointer;
+    border: 2px solid #999999; border-radius: 14px;
+}
+.onoffswitch-inner {
+    display: block; width: 200%; margin-left: -100%;
+    transition: margin 0.3s ease-in 0s;
+}
+.onoffswitch-inner:before, .onoffswitch-inner:after {
+    display: block; float: left; width: 50%; height: 19px; padding: 0; line-height: 19px;
+    font-size: 12px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+    box-sizing: border-box;
+}
+.onoffswitch-inner:before {
+    content: "Oversampling 4x ON";
+    padding-left: 0px;
+    background-color: #C23439; color: #FFFFFF;
+}
+.onoffswitch-inner:after {
+    content: "Oversampling 4x OFF";
+    padding-right: 58px;
+    background-color: #1C0B0B; color: #999999;
+    text-align: right;
+}
+.onoffswitch-switch {
+    display: block; width: 9px; margin: 5px;
+    background: #FFFFFF;
+    position: absolute; top: 0; bottom: 0;
+    right: 36px;
+    border: 2px solid #999999; border-radius: 14px;
+    transition: all 0.3s ease-in 0s; 
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+    margin-left: 0;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+    right: 0px; 
+}

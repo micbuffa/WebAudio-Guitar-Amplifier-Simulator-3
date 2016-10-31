@@ -1,0 +1,23 @@
+{
+  "name": "GuitarAmpSimulator",
+  "version": "0.1",
+  "description": "A guitar amp sim using Web Audio API",
+  "main": "server.js",
+  "dependencies": {
+    "express": "~4.13.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/micbuffa/WebAudio-Guitar-Amplifier-Simulator.git"
+  },
+  "author": "Michel Buffa, micbuffa@gmail.com, @micbuffa on slack and twitter",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/micbuffa/WebAudio-Guitar-Amplifier-Simulator/issues"
+  }
+}
