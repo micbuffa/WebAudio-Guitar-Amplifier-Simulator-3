@@ -19,7 +19,7 @@ For the moment, you need Google Chrome or FireFox (did not test with Microsoft E
 
 The Amp has been tested with a Mac Book Pro and different sound cards (Apogee Jam, different Presonus and RMEs) and works in real time with a very low latency (12-14ms). The latency is system and sound card dependent, so you've got to try. 
 
-You can try the Amp Sim without a guitar, just go to https://mainline.i3s.unice.fr/AmpSim3, wait until the eq sliders come up (that
+You can try the Amp Sim without a guitar, just go to https://wasabi.i3s.unice.fr/AmpSim3, wait until the eq sliders come up (that
 means that the reverb and cabinet simulator impulses have been loaded and decoded), and press the play button of the audio player on
 the left. Then you can try adjusting the knobs, sliders, change the presets from the preset menu etc.
 
