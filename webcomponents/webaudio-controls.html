@@ -26,5 +26,96 @@
 <link rel="import" href="webaudio-knob.html">
 <link rel="import" href="webaudio-slider.html">
 <link rel="import" href="webaudio-switch.html">
-<link rel="import" href="webaudio-param.html">
-<link rel="import" href="webaudio-keyboard.html">
+<!--<link rel="import" href="webaudio-param.html">
+<link rel="import" href="webaudio-keyboard2.html">
+-->
+
+
+<script>
+  var webAudioControlsManager = {
+    listOfDevices : [],
+    listOfWidgets : [],
+    currentConfig : undefined,
+    getCurrentConfigAsJSON : function() {
+      return this.currentConfig.stringify();
+    },
+    midiLearn: false,
+    addMidiListener: function(callback) {
+      // add the callback to the list of listeners...
+    }
+  }
+
+  //var webAudioControlsMidiManager = new WebAudioControlsMidiManager();
+
+  window.addEventListener('load', initWebAudioControls);
+
+  function initWebAudioControls() {
+      if (navigator.requestMIDIAccess) {
+          navigator.requestMIDIAccess()
+          .then(onMIDIStarted, onMIDISystemError);
+      }
+  }
+
+  var listOfExternalMidiListeners = [];
+
+  function webAudioControlsAddMidiListener(callback) {
+    listOfExternalMidiListeners.push(callback);
+  }
+
+
+  /**
+   * Created by ThiernoMamadouCellou on 2/12/2017.
+   */
+  var selectMIDI = null;
+  var midiAccess = null;
+  var midiIn = null;
+  var midi;
+  //var menu = document.querySelector("#context-menu");
+  var knobs = document.getElementsByTagName('webaudio-knob');
+  var sliders = document.getElementsByTagName('webaudio-slider');
+  var switches = document.getElementsByTagName('webaudio-switch');
+
+
+  /* midi learn config it one by one */
+
+  function handleMIDIMessage(event){
+    //console.log(restoreConfigs());
+    //console.log(document.querySelector("#"+preset_buttons[0].id));
+    for (var i = 0; i <knobs.length; i++){
+      knobs[i].processMidiEvent(event);
+    }
+    for (var i = 0; i <sliders.length; i++){
+      sliders[i].processMidiEvent(event);
+    }
+    for (var i = 0; i <switches.length; i++){
+      switches[i].processMidiEvent(event);
+    }
+
+    listOfExternalMidiListeners.forEach(function(externalListener) {
+      externalListener(event);
+    })
+  }
+  
+
+
+  function midiConnectionStateChange( e ) {
+    console.log("connection: " + e.port.name + " " + e.port.connection + " " + e.port.state );
+
+  }
+
+  function onMIDIStarted( midi ) {
+    midiAccess = midi;
+    var inputs = midiAccess.inputs.values();
+    console.log("Found " + midi.inputs.size + " MIDI input(s)");
+    console.log(midi);
+      for ( var input = inputs.next(); input && !input.done; input = inputs.next()){
+        console.log("Connected first input: " + input.value.name);
+        input.value.onmidimessage = handleMIDIMessage;
+      }
+  }
+
+  function onMIDISystemError( err ) {
+    document.getElementById("midilearn").className = "error";
+    console.log( "MIDI not initialized - error encountered:" + err.code );
+  }
+</script>
