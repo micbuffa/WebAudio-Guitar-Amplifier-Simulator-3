@@ -163,45 +163,45 @@
             <section style="flex: 4; order: 1;">
                 <div class="ampGUI" style="position:relative;background-image: url('img/imageprincipalefinienew.png');width:1127px;height:545px;padding:0px;">
                     <div>
-                        <webaudio-knob id="Knob1"   step="0.1"  style="position:absolute;left:66px;top:90px" src="img/Prophet.png" value="7"  min="0" max="10" diameter="69" sprites="99" tooltip="Volume" ></webaudio-knob>
-                        <webaudio-knob id="Knob2"  step="0.1" style="position:absolute;left:136px;top:90px" src="img/Prophet.png" value="2" min="0" max="10" diameter="69" sprites="99" tooltip="Master"></webaudio-knob>
+                        <webaudio-knob id="Knob1"   midilearn="true" step="0.1"  style="position:absolute;left:66px;top:90px" src="img/Prophet.png" value="7"  min="0" max="10" diameter="69" sprites="99" tooltip="Volume" ></webaudio-knob>
+                        <webaudio-knob id="Knob2"    midilearn="true" step="0.1" style="position:absolute;left:136px;top:90px" src="img/Prophet.png" value="2" min="0" max="10" diameter="69" sprites="99" tooltip="Master"></webaudio-knob>
                          <!-- boost button -->
                         <label style="color:white;position:absolute;left:70px;top:64px">Clean / Disto : </label>
                         <!--
                         <webaudio-switch style="color:white; position:absolute;left:225px;top:58px" id="toggleBoost" value="0" src="img/led.png" tooltip="Toggle clean/disto channel"></webaudio-switch>
                       -->
-                       <webaudio-switch style="color:white; position:absolute;left:170px;top:58px" id="toggleBoost" value="0" src="img/boostSwitch.png" tooltip="Toggle clean/disto channel"></webaudio-switch>
+                       <webaudio-switch   midilearn="true" style="color:white; position:absolute;left:170px;top:58px" id="toggleBoost" value="0" src="img/boostSwitch.png" tooltip="Toggle clean/disto channel"></webaudio-switch>
                         <!-- drive knob -->
-                        <webaudio-knob id="Knob3"   style="position:absolute;left:207px;top:90px" src="img/Prophet.png" value="0" step="0.1" min="0" max="10" diameter="69" sprites="99" tooltip="Drive"></webaudio-knob>
+                        <webaudio-knob id="Knob3"     midilearn="true" style="position:absolute;left:207px;top:90px" src="img/Prophet.png" value="0" step="0.1" min="0" max="10" diameter="69" sprites="99" tooltip="Drive"></webaudio-knob>
                         <select style="position:absolute;left:155px;top:356px"  id="distorsionMenu1">
                         </select>
                         <select style="position:absolute;left:393px;top:356px"  id="distorsionMenu2">
                         </select>
-                        <webaudio-knob id="Knob4"   style="position:absolute;left:275px;top:90px" src="img/Prophet.png" value="5" min="0" max="10" step="0.1" diameter="69" sprites="99" tooltip="Bass"></webaudio-knob>
-                        <webaudio-knob id="Knob5"   style="position:absolute;left:345px;top:90px" src="img/Prophet.png" value="5" min="0" max="10" step="0.1" diameter="69" sprites="99" tooltip="Midlle"></webaudio-knob>
-                        <webaudio-knob id="Knob6"   style="position:absolute;left:415px;top:90px" src="img/Prophet.png" value="5" min="0" max="10" step="0.1" diameter="69" sprites="99" tooltip="Treble"></webaudio-knob>
-                        <webaudio-knob id="Knob7"   style="position:absolute;left:486px;top:90px" src="img/Prophet.png" value="2" min="0" max="10" step="0.1" diameter="69" sprites="99" tooltip="Reverb"></webaudio-knob>
+                        <webaudio-knob id="Knob4"     midilearn="true" style="position:absolute;left:275px;top:90px" src="img/Prophet.png" value="5" min="0" max="10" step="0.1" diameter="69" sprites="99" tooltip="Bass"></webaudio-knob>
+                        <webaudio-knob id="Knob5"     midilearn="true" style="position:absolute;left:345px;top:90px" src="img/Prophet.png" value="5" min="0" max="10" step="0.1" diameter="69" sprites="99" tooltip="Midlle"></webaudio-knob>
+                        <webaudio-knob id="Knob6"     midilearn="true" style="position:absolute;left:415px;top:90px" src="img/Prophet.png" value="5" min="0" max="10" step="0.1" diameter="69" sprites="99" tooltip="Treble"></webaudio-knob>
+                        <webaudio-knob id="Knob7"     midilearn="true" style="position:absolute;left:486px;top:90px" src="img/Prophet.png" value="2" min="0" max="10" step="0.1" diameter="69" sprites="99" tooltip="Reverb"></webaudio-knob>
                         <select style="position:absolute;left:455px;top:190px" id="reverbImpulses">
                         </select>
-                        <webaudio-knob id="Knob8"   style="position:absolute;left:557px;top:90px" src="img/Prophet.png" value="5" min="0" max="10" step="0.1" diameter="69" sprites="99" tooltip="Presence"></webaudio-knob>
+                        <webaudio-knob id="Knob8"     midilearn="true" style="position:absolute;left:557px;top:90px" src="img/Prophet.png" value="5" min="0" max="10" step="0.1" diameter="69" sprites="99" tooltip="Presence"></webaudio-knob>
                     </div>
-                    <webaudio-slider id="slider1" style="position:absolute;left:731px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="-19" min="-30" max="30" step="1" basewidth="24" height="128" knobwidth="24" knobheight="24" ditchLength="100" tooltip="Slider1"></webaudio-slider>
-                    <webaudio-slider id="slider2" Units="Db" style="position:absolute;left:774px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="0" min="-30" max="30" step="1" width="24" height="128" knobwidth="24" knobheight="24" ditchLength="100"  tooltip="Slider2"></webaudio-slider>
-                    <webaudio-slider id="slider3" Units="Db" style="position:absolute;left:819px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="0" min="-30" max="30" step="1" width="24" height="128" knobwidth="24" knobheight="24" ditchLength="100" tooltip="Slider3"></webaudio-slider>
-                    <webaudio-slider id="slider4" Units="Db" style="position:absolute;left:865px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="0" min="-30" max="30" step="1" width="24" height="128" knobwidth="24" knobheight="24" ditchLength="100" units="%" tooltip="Slider4"></webaudio-slider>
-                    <webaudio-slider id="slider5" Units="Db" style="position:absolute;left:908px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="0" min="-30" max="30" step="1" width="24" height="128" knobwidth="24" knobheight="24" ditchLength="100" tooltip="Slider5"></webaudio-slider>
-                    <webaudio-slider id="slider6" Units="Db" style="position:absolute;left:951px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="-25" min="-30" max="30" step="1" width="24" height="128" knobwidth="24" knobheight="24" ditchLength="100" units="%" tooltip="Slider6"></webaudio-slider>      
-                    <webaudio-switch id="switch1"  style="position:absolute;left:1033px;top:72px" src="img/switch_toggle.png" value="0" height="45" width="45" tooltip="Switch-A Tooltip text test"></webaudio-switch>
+                    <webaudio-slider id="slider1"   midilearn="true" style="position:absolute;left:731px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="-19" min="-30" max="30" step="1" basewidth="24" height="128" knobwidth="24" knobheight="24" ditchLength="100" tooltip="Slider1"></webaudio-slider>
+                    <webaudio-slider id="slider2"   midilearn="true" Units="Db" style="position:absolute;left:774px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="0" min="-30" max="30" step="1" width="24" height="128" knobwidth="24" knobheight="24" ditchLength="100"  tooltip="Slider2"></webaudio-slider>
+                    <webaudio-slider id="slider3"   midilearn="true" Units="Db" style="position:absolute;left:819px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="0" min="-30" max="30" step="1" width="24" height="128" knobwidth="24" knobheight="24" ditchLength="100" tooltip="Slider3"></webaudio-slider>
+                    <webaudio-slider id="slider4"   midilearn="true" Units="Db" style="position:absolute;left:865px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="0" min="-30" max="30" step="1" width="24" height="128" knobwidth="24" knobheight="24" ditchLength="100" units="%" tooltip="Slider4"></webaudio-slider>
+                    <webaudio-slider id="slider5"   midilearn="true" Units="Db" style="position:absolute;left:908px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="0" min="-30" max="30" step="1" width="24" height="128" knobwidth="24" knobheight="24" ditchLength="100" tooltip="Slider5"></webaudio-slider>
+                    <webaudio-slider id="slider6"   midilearn="true" Units="Db" style="position:absolute;left:951px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="-25" min="-30" max="30" step="1" width="24" height="128" knobwidth="24" knobheight="24" ditchLength="100" units="%" tooltip="Slider6"></webaudio-slider>      
+                    <webaudio-switch id="switch1"    midilearn="true" style="position:absolute;left:1033px;top:72px" src="img/switch_toggle.png" value="0" height="45" width="45" tooltip="Switch-A Tooltip text test"></webaudio-switch>
                     <webaudio-switch id="led" style="position:absolute;left:1043px;top:125px" src="img/led_23_red.png" value="1" height="23" width="23" tooltip="Switch-B"></webaudio-switch>
-                    <webaudio-switch id="switch2" style="position:absolute;left:1033px;top:140px" src="img/switch_toggle.png" value="0" height="45" width="45" tooltip="Switch-B"></webaudio-switch>
+                    <webaudio-switch id="switch2"   midilearn="true" style="position:absolute;left:1033px;top:140px" src="img/switch_toggle.png" value="0" height="45" width="45" tooltip="Switch-B"></webaudio-switch>
                     <button  style="position:absolute;left:570px;top:270px" type="button" onclick="amp.printCurrentAmpValues();">Show current settings in console</button>
                     <button  id="toggleGuitarIn" style="position:absolute;left:570px;top:300px" class="pulse"  type="button" onclick="toggleGuitarInput(event)">Guitar input: <span style='color:red;'>NOT ACTIVATED</span>, click to toggle on/off!</button>
-                    <webaudio-knob id="Knob9"   style="position:absolute;left:570px;top:350px" src="img/Prophet.png" value="1" default="1" min="0" max="10" step="0.1" diameter="49" sprites="99" tooltip="InputGain"></webaudio-knob>
+                    <webaudio-knob id="Knob9"     midilearn="true" style="position:absolute;left:570px;top:350px" src="img/Prophet.png" value="1" default="1" min="0" max="10" step="0.1" diameter="49" sprites="99" tooltip="InputGain"></webaudio-knob>
 
                     <canvas id="inputSignalCanvas" style="position:absolute;left:630px;top:350px" width=150 height=50></canvas>
                     <div style="color:white; position:absolute;left:560px;top:405px">Input Gain
                     </div>
-                    <webaudio-knob id="Knob10"   style="position:absolute;left:780px;top:350px" src="img/Prophet.png" value="5" default="5" min="0" max="10" step="0.1" diameter="49" sprites="99" tooltip="OutputGain"></webaudio-knob>
+                    <webaudio-knob id="Knob10"     midilearn="true" style="position:absolute;left:780px;top:350px" src="img/Prophet.png" value="5" default="5" min="0" max="10" step="0.1" diameter="49" sprites="99" tooltip="OutputGain"></webaudio-knob>
                     <canvas id="outputSignalCanvas" style="position:absolute;left:830px;top:350px" width=150 height=50></canvas>
                     <div style="color:white; position:absolute;left:763px;top:405px">Output Gain
                     </div>
