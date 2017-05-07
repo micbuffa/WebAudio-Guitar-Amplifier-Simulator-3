@@ -3,7 +3,7 @@ A Guitar Amplifier Simulator written using the Web Audio API. This is a new desi
 
 This one has a preamp close to the one of the Marshall JCM 800. The tonestack (bass/med/treble) is not 100% accurate, and the power amp stage has been modeled using a gain + waveshaper (the power amp stage influences the final sound, but less than the preamp).
 
-![WebAudio Amp Simulator](http://wasabi.i3s.unice.fr/AmpSim3/AmpSimFA.jpg)
+![WebAudio Amp Simulator](http://mainline.i3s.unice.fr/AmpSim3/AmpSimFA.jpg)
 
 See it in also action in these videos:
 https://www.youtube.com/watch?v=5q5jRh4qV_w and https://www.youtube.com/watch?v=7bf3Dgl-qGc
