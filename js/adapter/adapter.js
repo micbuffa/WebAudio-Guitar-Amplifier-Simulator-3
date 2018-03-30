@@ -11,13 +11,15 @@
 /* jshint browser: true, camelcase: true, curly: true, devel: true,
    eqeqeq: true, forin: false, globalstrict: true, node: true,
    quotmark: single, undef: true, unused: strict */
-/* global mozRTCIceCandidate, mozRTCPeerConnection, Promise,
-mozRTCSessionDescription, webkitRTCPeerConnection, MediaStreamTrack,
-MediaStream, RTCIceGatherer, RTCIceTransport, RTCDtlsTransport,
-RTCRtpSender, RTCRtpReceiver*/
+// global mozRTCIceCandidate, mozRTCPeerConnection, Promise,
+//   mozRTCSessionDescription, webkitRTCPeerConnection, MediaStreamTrack,
+// MediaStream, RTCIceGatherer, RTCIceTransport, RTCDtlsTransport,
+// RTCRtpSender, RTCRtpReceiver
 /* exported trace,requestUserMedia */
 
 'use strict';
+import SDPUtils from './sdputils.js';
+import Utils from './utils.js';
 
 var getUserMedia = null;
 var attachMediaStream = null;
@@ -39,19 +41,6 @@ var webrtcUtils = {
     return match && match.length >= pos && parseInt(match[pos], 10);
   }
 };
-
-function trace(text) {
-  // This function is used for logging.
-  if (text[text.length - 1] === '\n') {
-    text = text.substring(0, text.length - 1);
-  }
-  if (window.performance) {
-    var now = (window.performance.now() / 1000).toFixed(3);
-    webrtcUtils.log(now + ': ' + text);
-  } else {
-    webrtcUtils.log(text);
-  }
-}
 
 if (typeof window === 'object') {
   if (window.HTMLMediaElement &&
@@ -91,7 +80,8 @@ reattachMediaStream = function(to, from) {
 if (typeof window === 'undefined' || !window.navigator) {
   webrtcUtils.log('This does not appear to be a browser');
   webrtcDetectedBrowser = 'not a browser';
-} else if (navigator.mozGetUserMedia) {
+}
+else if (navigator.mozGetUserMedia) {
   webrtcUtils.log('This appears to be Firefox');
 
   webrtcDetectedBrowser = 'firefox';
@@ -133,20 +123,6 @@ if (typeof window === 'undefined' || !window.navigator) {
       }
       return new mozRTCPeerConnection(pcConfig, pcConstraints); // jscs:ignore requireCapitalizedConstructors
     };
-
-    // wrap static methods. Currently just generateCertificate.
-    if (mozRTCPeerConnection.generateCertificate) {
-      Object.defineProperty(window.RTCPeerConnection, 'generateCertificate', {
-        get: function() {
-          if (arguments.length) {
-            return mozRTCPeerConnection.generateCertificate.apply(null,
-                arguments);
-          } else {
-            return mozRTCPeerConnection.generateCertificate;
-          }
-        }
-      });
-    }
 
     window.RTCSessionDescription = mozRTCSessionDescription;
     window.RTCIceCandidate = mozRTCIceCandidate;
@@ -243,7 +219,8 @@ if (typeof window === 'undefined' || !window.navigator) {
       });
     };
   }
-} else if (navigator.webkitGetUserMedia && window.webkitRTCPeerConnection) {
+}
+else if (navigator.webkitGetUserMedia && window.webkitRTCPeerConnection) {
   webrtcUtils.log('This appears to be Chrome');
 
   webrtcDetectedBrowser = 'chrome';
@@ -306,7 +283,7 @@ if (typeof window === 'undefined' || !window.navigator) {
         if (args.length === 1 && selector === null) {
           origGetStats.apply(self, [
               function(response) {
-                resolve.apply(null, [fixChromeStats(response)]);
+                resolve([fixChromeStats(response)]);
               }, reject]);
         } else {
           origGetStats.apply(self, [resolve, reject]);
@@ -316,20 +293,6 @@ if (typeof window === 'undefined' || !window.navigator) {
 
     return pc;
   };
-
-  // wrap static methods. Currently just generateCertificate.
-  if (webkitRTCPeerConnection.generateCertificate) {
-    Object.defineProperty(window.RTCPeerConnection, 'generateCertificate', {
-      get: function() {
-        if (arguments.length) {
-          return webkitRTCPeerConnection.generateCertificate.apply(null,
-              arguments);
-        } else {
-          return webkitRTCPeerConnection.generateCertificate;
-        }
-      }
-    });
-  }
 
   // add promise support
   ['createOffer', 'createAnswer'].forEach(function(method) {
@@ -464,8 +427,7 @@ if (typeof window === 'undefined' || !window.navigator) {
     // Even though Chrome 45 has navigator.mediaDevices and a getUserMedia
     // function which returns a Promise, it does not accept spec-style
     // constraints.
-    var origGetUserMedia = navigator.mediaDevices.getUserMedia.
-        bind(navigator.mediaDevices);
+    var origGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
     navigator.mediaDevices.getUserMedia = function(c) {
       webrtcUtils.log('spec:   ' + JSON.stringify(c)); // whitespace for alignment
       c.audio = constraintsToChrome(c.audio);
@@ -519,380 +481,6 @@ if (typeof window === 'undefined' || !window.navigator) {
   webrtcMinimumVersion = 10547;
 
   if (window.RTCIceGatherer) {
-    // Generate an alphanumeric identifier for cname or mids.
-    // TODO: use UUIDs instead? https://gist.github.com/jed/982883
-    var generateIdentifier = function() {
-      return Math.random().toString(36).substr(2, 10);
-    };
-
-    // The RTCP CNAME used by all peerconnections from the same JS.
-    var localCName = generateIdentifier();
-
-    // SDP helpers - to be moved into separate module.
-    var SDPUtils = {};
-
-    // Splits SDP into lines, dealing with both CRLF and LF.
-    SDPUtils.splitLines = function(blob) {
-      return blob.trim().split('\n').map(function(line) {
-        return line.trim();
-      });
-    };
-
-    // Splits SDP into sessionpart and mediasections. Ensures CRLF.
-    SDPUtils.splitSections = function(blob) {
-      var parts = blob.split('\r\nm=');
-      return parts.map(function(part, index) {
-        return (index > 0 ? 'm=' + part : part).trim() + '\r\n';
-      });
-    };
-
-    // Returns lines that start with a certain prefix.
-    SDPUtils.matchPrefix = function(blob, prefix) {
-      return SDPUtils.splitLines(blob).filter(function(line) {
-        return line.indexOf(prefix) === 0;
-      });
-    };
-
-    // Parses an ICE candidate line. Sample input:
-    // candidate:702786350 2 udp 41819902 8.8.8.8 60769 typ relay raddr 8.8.8.8 rport 55996"
-    SDPUtils.parseCandidate = function(line) {
-      var parts;
-      // Parse both variants.
-      if (line.indexOf('a=candidate:') === 0) {
-        parts = line.substring(12).split(' ');
-      } else {
-        parts = line.substring(10).split(' ');
-      }
-
-      var candidate = {
-        foundation: parts[0],
-        component: parts[1],
-        protocol: parts[2].toLowerCase(),
-        priority: parseInt(parts[3], 10),
-        ip: parts[4],
-        port: parseInt(parts[5], 10),
-        // skip parts[6] == 'typ'
-        type: parts[7]
-      };
-
-      for (var i = 8; i < parts.length; i += 2) {
-        switch (parts[i]) {
-          case 'raddr':
-            candidate.relatedAddress = parts[i + 1];
-            break;
-          case 'rport':
-            candidate.relatedPort = parseInt(parts[i + 1], 10);
-            break;
-          case 'tcptype':
-            candidate.tcpType = parts[i + 1];
-            break;
-          default: // Unknown extensions are silently ignored.
-            break;
-        }
-      }
-      return candidate;
-    };
-
-    // Translates a candidate object into SDP candidate attribute.
-    SDPUtils.writeCandidate = function(candidate) {
-      var sdp = [];
-      sdp.push(candidate.foundation);
-      sdp.push(candidate.component);
-      sdp.push(candidate.protocol.toUpperCase());
-      sdp.push(candidate.priority);
-      sdp.push(candidate.ip);
-      sdp.push(candidate.port);
-
-      var type = candidate.type;
-      sdp.push('typ');
-      sdp.push(type);
-      if (type !== 'host' && candidate.relatedAddress &&
-          candidate.relatedPort) {
-        sdp.push('raddr');
-        sdp.push(candidate.relatedAddress); // was: relAddr
-        sdp.push('rport');
-        sdp.push(candidate.relatedPort); // was: relPort
-      }
-      if (candidate.tcpType && candidate.protocol.toLowerCase() === 'tcp') {
-        sdp.push('tcptype');
-        sdp.push(candidate.tcpType);
-      }
-      return 'candidate:' + sdp.join(' ');
-    };
-
-    // Parses an rtpmap line, returns RTCRtpCoddecParameters. Sample input:
-    // a=rtpmap:111 opus/48000/2
-    SDPUtils.parseRtpMap = function(line) {
-      var parts = line.substr(9).split(' ');
-      var parsed = {
-        payloadType: parseInt(parts.shift(), 10) // was: id
-      };
-
-      parts = parts[0].split('/');
-
-      parsed.name = parts[0];
-      parsed.clockRate = parseInt(parts[1], 10); // was: clockrate
-      parsed.numChannels = parts.length === 3 ? parseInt(parts[2], 10) : 1; // was: channels
-      return parsed;
-    };
-
-    // Generate an a=rtpmap line from RTCRtpCodecCapability or RTCRtpCodecParameters.
-    SDPUtils.writeRtpMap = function(codec) {
-      var pt = codec.payloadType;
-      if (codec.preferredPayloadType !== undefined) {
-        pt = codec.preferredPayloadType;
-      }
-      return 'a=rtpmap:' + pt + ' ' + codec.name + '/' + codec.clockRate +
-          (codec.numChannels !== 1 ? '/' + codec.numChannels : '') + '\r\n';
-    };
-
-    // Parses an ftmp line, returns dictionary. Sample input:
-    // a=fmtp:96 vbr=on;cng=on
-    // Also deals with vbr=on; cng=on
-    SDPUtils.parseFmtp = function(line) {
-      var parsed = {};
-      var kv;
-      var parts = line.substr(line.indexOf(' ') + 1).split(';');
-      for (var j = 0; j < parts.length; j++) {
-        kv = parts[j].trim().split('=');
-        parsed[kv[0].trim()] = kv[1];
-      }
-      return parsed;
-    };
-
-    // Generates an a=ftmp line from RTCRtpCodecCapability or RTCRtpCodecParameters.
-    SDPUtils.writeFtmp = function(codec) {
-      var line = '';
-      var pt = codec.payloadType;
-      if (codec.preferredPayloadType !== undefined) {
-        pt = codec.preferredPayloadType;
-      }
-      if (codec.parameters && codec.parameters.length) {
-        var params = [];
-        Object.keys(codec.parameters).forEach(function(param) {
-          params.push(param + '=' + codec.parameters[param]);
-        });
-        line += 'a=fmtp:' + pt + ' ' + params.join(';') + '\r\n';
-      }
-      return line;
-    };
-
-    // Parses an rtcp-fb line, returns RTCPRtcpFeedback object. Sample input:
-    // a=rtcp-fb:98 nack rpsi
-    SDPUtils.parseRtcpFb = function(line) {
-      var parts = line.substr(line.indexOf(' ') + 1).split(' ');
-      return {
-        type: parts.shift(),
-        parameter: parts.join(' ')
-      };
-    };
-    // Generate a=rtcp-fb lines from RTCRtpCodecCapability or RTCRtpCodecParameters.
-    SDPUtils.writeRtcpFb = function(codec) {
-      var lines = '';
-      var pt = codec.payloadType;
-      if (codec.preferredPayloadType !== undefined) {
-        pt = codec.preferredPayloadType;
-      }
-      if (codec.rtcpFeedback && codec.rtcpFeedback.length) {
-        // FIXME: special handling for trr-int?
-        codec.rtcpFeedback.forEach(function(fb) {
-          lines += 'a=rtcp-fb:' + pt + ' ' + fb.type + ' ' + fb.parameter +
-              '\r\n';
-        });
-      }
-      return lines;
-    };
-
-    // Parses an RFC 5576 ssrc media attribute. Sample input:
-    // a=ssrc:3735928559 cname:something
-    SDPUtils.parseSsrcMedia = function(line) {
-      var sp = line.indexOf(' ');
-      var parts = {
-        ssrc: line.substr(7, sp - 7),
-      };
-      var colon = line.indexOf(':', sp);
-      if (colon > -1) {
-        parts.attribute = line.substr(sp + 1, colon - sp - 1);
-        parts.value = line.substr(colon + 1);
-      } else {
-        parts.attribute = line.substr(sp + 1);
-      }
-      return parts;
-    };
-
-    // Extracts DTLS parameters from SDP media section or sessionpart.
-    // FIXME: for consistency with other functions this should only
-    //   get the fingerprint line as input. See also getIceParameters.
-    SDPUtils.getDtlsParameters = function(mediaSection, sessionpart) {
-      var lines = SDPUtils.splitLines(mediaSection);
-      lines = lines.concat(SDPUtils.splitLines(sessionpart)); // Search in session part, too.
-      var fpLine = lines.filter(function(line) {
-        return line.indexOf('a=fingerprint:') === 0;
-      })[0].substr(14);
-      // Note: a=setup line is ignored since we use the 'auto' role.
-      var dtlsParameters = {
-        role: 'auto',
-        fingerprints: [{
-          algorithm: fpLine.split(' ')[0],
-          value: fpLine.split(' ')[1]
-        }]
-      };
-      return dtlsParameters;
-    };
-
-    // Serializes DTLS parameters to SDP.
-    SDPUtils.writeDtlsParameters = function(params, setupType) {
-      var sdp = 'a=setup:' + setupType + '\r\n';
-      params.fingerprints.forEach(function(fp) {
-        sdp += 'a=fingerprint:' + fp.algorithm + ' ' + fp.value + '\r\n';
-      });
-      return sdp;
-    };
-    // Parses ICE information from SDP media section or sessionpart.
-    // FIXME: for consistency with other functions this should only
-    //   get the ice-ufrag and ice-pwd lines as input.
-    SDPUtils.getIceParameters = function(mediaSection, sessionpart) {
-      var lines = SDPUtils.splitLines(mediaSection);
-      lines = lines.concat(SDPUtils.splitLines(sessionpart)); // Search in session part, too.
-      var iceParameters = {
-        usernameFragment: lines.filter(function(line) {
-          return line.indexOf('a=ice-ufrag:') === 0;
-        })[0].substr(12),
-        password: lines.filter(function(line) {
-          return line.indexOf('a=ice-pwd:') === 0;
-        })[0].substr(10)
-      };
-      return iceParameters;
-    };
-
-    // Serializes ICE parameters to SDP.
-    SDPUtils.writeIceParameters = function(params) {
-      return 'a=ice-ufrag:' + params.usernameFragment + '\r\n' +
-          'a=ice-pwd:' + params.password + '\r\n';
-    };
-
-    // Parses the SDP media section and returns RTCRtpParameters.
-    SDPUtils.parseRtpParameters = function(mediaSection) {
-      var description = {
-        codecs: [],
-        headerExtensions: [],
-        fecMechanisms: [],
-        rtcp: []
-      };
-      var lines = SDPUtils.splitLines(mediaSection);
-      var mline = lines[0].split(' ');
-      for (var i = 3; i < mline.length; i++) { // find all codecs from mline[3..]
-        var pt = mline[i];
-        var rtpmapline = SDPUtils.matchPrefix(
-            mediaSection, 'a=rtpmap:' + pt + ' ')[0];
-        if (rtpmapline) {
-          var codec = SDPUtils.parseRtpMap(rtpmapline);
-          var fmtps = SDPUtils.matchPrefix(
-              mediaSection, 'a=fmtp:' + pt + ' ');
-          // Only the first a=fmtp:<pt> is considered.
-          codec.parameters = fmtps.length ? SDPUtils.parseFmtp(fmtps[0]) : {};
-          codec.rtcpFeedback = SDPUtils.matchPrefix(
-              mediaSection, 'a=rtcp-fb:' + pt + ' ')
-            .map(SDPUtils.parseRtcpFb);
-          description.codecs.push(codec);
-        }
-      }
-      // FIXME: parse headerExtensions, fecMechanisms and rtcp.
-      return description;
-    };
-
-    // Generates parts of the SDP media section describing the capabilities / parameters.
-    SDPUtils.writeRtpDescription = function(kind, caps) {
-      var sdp = '';
-
-      // Build the mline.
-      sdp += 'm=' + kind + ' ';
-      sdp += caps.codecs.length > 0 ? '9' : '0'; // reject if no codecs.
-      sdp += ' UDP/TLS/RTP/SAVPF ';
-      sdp += caps.codecs.map(function(codec) {
-        if (codec.preferredPayloadType !== undefined) {
-          return codec.preferredPayloadType;
-        }
-        return codec.payloadType;
-      }).join(' ') + '\r\n';
-
-      sdp += 'c=IN IP4 0.0.0.0\r\n';
-      sdp += 'a=rtcp:9 IN IP4 0.0.0.0\r\n';
-
-      // Add a=rtpmap lines for each codec. Also fmtp and rtcp-fb.
-      caps.codecs.forEach(function(codec) {
-        sdp += SDPUtils.writeRtpMap(codec);
-        sdp += SDPUtils.writeFtmp(codec);
-        sdp += SDPUtils.writeRtcpFb(codec);
-      });
-      // FIXME: add headerExtensions, fecMechanismş and rtcp.
-      sdp += 'a=rtcp-mux\r\n';
-      return sdp;
-    };
-
-    SDPUtils.writeSessionBoilerplate = function() {
-      // FIXME: sess-id should be an NTP timestamp.
-      return 'v=0\r\n' +
-          'o=thisisadapterortc 8169639915646943137 2 IN IP4 127.0.0.1\r\n' +
-          's=-\r\n' +
-          't=0 0\r\n';
-    };
-
-    SDPUtils.writeMediaSection = function(transceiver, caps, type, stream) {
-      var sdp = SDPUtils.writeRtpDescription(transceiver.kind, caps);
-
-      // Map ICE parameters (ufrag, pwd) to SDP.
-      sdp += SDPUtils.writeIceParameters(
-          transceiver.iceGatherer.getLocalParameters());
-
-      // Map DTLS parameters to SDP.
-      sdp += SDPUtils.writeDtlsParameters(
-          transceiver.dtlsTransport.getLocalParameters(),
-          type === 'offer' ? 'actpass' : 'active');
-
-      sdp += 'a=mid:' + transceiver.mid + '\r\n';
-
-      if (transceiver.rtpSender && transceiver.rtpReceiver) {
-        sdp += 'a=sendrecv\r\n';
-      } else if (transceiver.rtpSender) {
-        sdp += 'a=sendonly\r\n';
-      } else if (transceiver.rtpReceiver) {
-        sdp += 'a=recvonly\r\n';
-      } else {
-        sdp += 'a=inactive\r\n';
-      }
-
-      // FIXME: for RTX there might be multiple SSRCs. Not implemented in Edge yet.
-      if (transceiver.rtpSender) {
-        var msid = 'msid:' + stream.id + ' ' +
-            transceiver.rtpSender.track.id + '\r\n';
-        sdp += 'a=' + msid;
-        sdp += 'a=ssrc:' + transceiver.sendSsrc + ' ' + msid;
-      }
-      // FIXME: this should be written by writeRtpDescription.
-      sdp += 'a=ssrc:' + transceiver.sendSsrc + ' cname:' +
-          localCName + '\r\n';
-      return sdp;
-    };
-
-    // Gets the direction from the mediaSection or the sessionpart.
-    SDPUtils.getDirection = function(mediaSection, sessionpart) {
-      // Look for sendrecv, sendonly, recvonly, inactive, default to sendrecv.
-      var lines = SDPUtils.splitLines(mediaSection);
-      for (var i = 0; i < lines.length; i++) {
-        switch (lines[i]) {
-          case 'a=sendrecv':
-          case 'a=sendonly':
-          case 'a=recvonly':
-          case 'a=inactive':
-            return lines[i].substr(2);
-        }
-      }
-      if (sessionpart) {
-        return SDPUtils.getDirection(sessionpart);
-      }
-      return 'sendrecv';
-    };
 
     // ORTC defines an RTCIceCandidate object but no constructor.
     // Not implemented in Edge.
@@ -960,7 +548,7 @@ if (typeof window === 'undefined' || !window.navigator) {
         config.iceServers.forEach(function(server) {
           if (server.urls) {
             var url;
-            if (typeof(server.urls) === 'string') {
+            if ((typeof server.urls) === 'string') {
               url = server.urls;
             } else {
               url = server.urls[0];
@@ -1324,7 +912,7 @@ if (typeof window === 'undefined' || !window.navigator) {
           rtpSender = transceiver.rtpSender;
           rtpReceiver = transceiver.rtpReceiver;
           sendSsrc = transceiver.sendSsrc;
-          //recvSsrc = transceiver.recvSsrc;
+          // recvSsrc = transceiver.recvSsrc;
           localCapabilities = transceiver.localCapabilities;
 
           self.transceivers[sdpMLineIndex].recvSsrc = recvSsrc;
@@ -1498,8 +1086,7 @@ if (typeof window === 'undefined' || !window.navigator) {
           tracks.push({
             kind: track.kind,
             track: track,
-            wantReceive: track.kind === 'audio' ?
-                numAudioTracks > 0 : numVideoTracks > 0
+            wantReceive: track.kind === 'audio' ? numAudioTracks > 0 : numVideoTracks > 0
           });
           if (track.kind === 'audio') {
             numAudioTracks--;
@@ -1533,7 +1120,7 @@ if (typeof window === 'undefined' || !window.navigator) {
         // potentially rtpsender and rtpreceiver.
         var track = mline.track;
         var kind = mline.kind;
-        var mid = generateIdentifier();
+        var mid = Utils.generateIdentifier();
 
         var transports = self._createIceAndDtlsTransports(mid, sdpMLineIndex);
 
@@ -1582,12 +1169,6 @@ if (typeof window === 'undefined' || !window.navigator) {
 
     window.RTCPeerConnection.prototype.createAnswer = function() {
       var self = this;
-      var answerOptions;
-      if (arguments.length === 1 && typeof arguments[0] !== 'function') {
-        answerOptions = arguments[0];
-      } else if (arguments.length === 3) {
-        answerOptions = arguments[2];
-      }
 
       var sdp = SDPUtils.writeSessionBoilerplate();
       this.transceivers.forEach(function(transceiver) {
@@ -1622,8 +1203,9 @@ if (typeof window === 'undefined' || !window.navigator) {
       }
       var transceiver = this.transceivers[mLineIndex];
       if (transceiver) {
-        var cand = Object.keys(candidate.candidate).length > 0 ?
-            SDPUtils.parseCandidate(candidate.candidate) : {};
+        var cand = Object.keys(candidate.candidate).length > 0
+          ? SDPUtils.parseCandidate(candidate.candidate) : {};
+
         // Ignore Chrome's invalid candidates since Edge does not like them.
         if (cand.protocol === 'tcp' && cand.port === 0) {
           return;
@@ -1672,7 +1254,8 @@ if (typeof window === 'undefined' || !window.navigator) {
       });
     };
   }
-} else {
+}
+else {
   webrtcUtils.log('Browser does not appear to be WebRTC-capable');
 }
 
@@ -1688,7 +1271,8 @@ try {
   Object.defineProperty(webrtcTesting, 'version', {
     set: function(version) {
       webrtcDetectedVersion = version;
-    }
+    },
+    get: null
   });
 } catch (e) {}
 
@@ -1713,8 +1297,6 @@ if (typeof module !== 'undefined') {
     webrtcMinimumVersion: webrtcMinimumVersion,
     webrtcTesting: webrtcTesting,
     webrtcUtils: webrtcUtils
-    //requestUserMedia: not exposed on purpose.
-    //trace: not exposed on purpose.
   };
 } else if ((typeof require === 'function') && (typeof define === 'function')) {
   // Expose objects and functions when RequireJS is doing the loading.
@@ -1731,8 +1313,6 @@ if (typeof module !== 'undefined') {
       webrtcMinimumVersion: webrtcMinimumVersion,
       webrtcTesting: webrtcTesting,
       webrtcUtils: webrtcUtils
-      //requestUserMedia: not exposed on purpose.
-      //trace: not exposed on purpose.
     };
   });
 }
