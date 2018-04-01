@@ -1,18 +1,10 @@
+import {gotStream} from './amp/amp.js';
+
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
 var audioContext = new AudioContext();
 
 window.addEventListener('load', startWithFirefoxComaptibility /*start*/);
-
-function convertToMono(input) {
-    var splitter = audioContext.createChannelSplitter(2);
-    var merger = audioContext.createChannelMerger(2);
-
-    input.connect(splitter);
-    splitter.connect(merger, 0, 0);
-    splitter.connect(merger, 0, 1);
-    return merger;
-}
 
 var lpInputFilter = null;
 
@@ -24,8 +16,6 @@ function createLPInputFilter() {
     return lpInputFilter;
 }
 
-
-var useFeedbackReduction = true;
 function initAudio() {
     if (!navigator.getUserMedia)
         navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
@@ -33,7 +23,7 @@ function initAudio() {
     if (!navigator.getUserMedia)
         return(alert("Error: getUserMedia not supported!"));
 
-    navigator.getUserMedia(constraints, gotStream, function (e) {
+    navigator.getUserMedia(constraints, gotStream.bind(null, audioContext), function (e) {
         alert('Error getting audio');
         console.log(e);
     });
@@ -91,15 +81,14 @@ function start() {
                 return navigator.mediaDevices.enumerateDevices();
             })
             .then(gotDevices)
-            .then(gotStream);
-    //.catch(errorCallback);
+            .then(gotStream.bind(null, audioContext));
 }
 
 function startWithFirefoxComaptibility() {
-    var constraints = { 
+    var constraints = {
        audio: {
-            echoCancellation: false, mozNoiseSuppression: false, mozAutoGainControl: false  
-       } 
+            echoCancellation: false, mozNoiseSuppression: false, mozAutoGainControl: false
+       }
    };
 
     navigator.mediaDevices.getUserMedia(constraints)
@@ -107,7 +96,7 @@ function startWithFirefoxComaptibility() {
                 window.stream = stream; // make stream available to console
                 // Refresh button list in case labels have become available
             })
-            .then(gotStream);
+            .then(gotStream.bind(null, audioContext));
 }
 
 function gotDevices(deviceInfos) {

@@ -3,13 +3,14 @@
     <head>
         <meta charset="utf-8">
         <title>WebAudio guitar amp sim</title>
-        <script src="js/adapter.js"></script>
-        <script src="js/initAudio.js"></script>
-        <script src="js/visualization.js"></script>
-        <script src="js/amp.js"></script>
+        <script type="module" src="js/adapter/adapter.js"></script>
+        <script type="module" src="js/initAudio.js"></script>
+        <script type="module" src="js/amp/visualization.js"></script>
+        <script type="module" src="js/amp/amp.js"></script>
         <script src="js/utils.js"></script>
         <script src="js/distorsionFactory.js"></script>
         <script src="js/curveDrawer.js"></script>
+
 
     <script src="./bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
     <link rel="import" href="./bower_components/polymer/polymer.html">
@@ -26,16 +27,17 @@
             }
         </style>
     </head>
+
     <body style="background-color:#eee;">
         <h1>Guitar Amp Simulation using WebAudio</a></h1>
- 
+
 
         <p>Author: Michel Buffa (@micbuffa), GUI with the help of Mahdi Wartani, big thanks to LePou for giving me so many hints too.</p>
         <p>Videos with explanations on YouTube: <a href="https://www.youtube.com/watch?v=5q5jRh4qV_w" target="_blank">video1</a> and <a href="https://www.youtube.com/watch?v=7bf3Dgl-qGc" target="_blank">video2</a></p>
         <p><a href="https://github.com/micbuffa/WebAudio-Guitar-Amplifier-Simulator-3" target="_blank">You may visit the GitHub repo.</a></p>
         <p><b>You need Google Chrome, FireFox Nightly or Opera (the app should support soon other browsers) + don't forget to set the default input in your OS preferences. If you plugged a guitar in, then press the pulsing button in the middle of the Amp to activate it. Otherwise you can try the amp with the audio player on the left, press play and use the preset menu or the buttons/sliders.</b></p>
         <p>The preamp is close to the one from the famous Marshall JCM 800 guitar amp.</p>
-        
+
         <article style="display: flex; flex-direction: row; width:100%">
             <section style="flex: 1;">
 
@@ -48,7 +50,7 @@
                         <source src="assets/audio/BasketCase Greenday riff DI.ogg">
                         Your browser does not support the audio tag.
                     </audio>
-                    <div id="demoSample">Choose a demo sample: 
+                    <div id="demoSample">Choose a demo sample:
                         <select id="demoSampleMenu" onchange="changeDemoSample(this.value);">
                           <option value="0">Metal riff 1</option>
                           <option value="1">Metal riff 2</option>
@@ -124,7 +126,7 @@
                         <output id="preampStage2Gain">1</output>
                     </div>
 
- 
+
 
                     <p>DRIVE : distorsion levels</p>
                     <div class="controls">
@@ -153,11 +155,11 @@
                         <output id="cabinetGainOutput">2</output>
 
                     <p>
-                        Cabinet impulse: 
+                        Cabinet impulse:
                         <select id="cabinetImpulses">
                         </select>
                 </div>
-                <!-- end amp jsbin --> 
+                <!-- end amp jsbin -->
 
             </section>
             <section style="flex: 4; order: 1;">
@@ -190,12 +192,12 @@
                     <webaudio-slider id="slider3"   midilearn="true" Units="Db" style="position:absolute;left:819px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="0" min="-30" max="30" step="1" width="24" height="128" knobwidth="24" knobheight="24" ditchLength="100" tooltip="Slider3"></webaudio-slider>
                     <webaudio-slider id="slider4"   midilearn="true" Units="Db" style="position:absolute;left:865px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="0" min="-30" max="30" step="1" width="24" height="128" knobwidth="24" knobheight="24" ditchLength="100" units="%" tooltip="Slider4"></webaudio-slider>
                     <webaudio-slider id="slider5"   midilearn="true" Units="Db" style="position:absolute;left:908px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="0" min="-30" max="30" step="1" width="24" height="128" knobwidth="24" knobheight="24" ditchLength="100" tooltip="Slider5"></webaudio-slider>
-                    <webaudio-slider id="slider6"   midilearn="true" Units="Db" style="position:absolute;left:951px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="-25" min="-30" max="30" step="1" width="24" height="128" knobwidth="24" knobheight="24" ditchLength="100" units="%" tooltip="Slider6"></webaudio-slider>      
+                    <webaudio-slider id="slider6"   midilearn="true" Units="Db" style="position:absolute;left:951px;top:64px" src="img/vsliderbody.png" knobsrc="img/vsliderknob.png" value="-25" min="-30" max="30" step="1" width="24" height="128" knobwidth="24" knobheight="24" ditchLength="100" units="%" tooltip="Slider6"></webaudio-slider>
                     <webaudio-switch id="switch1"    midilearn="true" style="position:absolute;left:1033px;top:72px" src="img/switch_toggle.png" value="0" height="45" width="45" tooltip="Switch-A Tooltip text test"></webaudio-switch>
                     <webaudio-switch id="led" style="position:absolute;left:1043px;top:125px" src="img/led_23_red.png" value="1" height="23" width="23" tooltip="Switch-B"></webaudio-switch>
                     <webaudio-switch id="switch2"   midilearn="true" style="position:absolute;left:1033px;top:140px" src="img/switch_toggle.png" value="0" height="45" width="45" tooltip="Switch-B"></webaudio-switch>
                     <button  style="position:absolute;left:570px;top:270px" type="button" onclick="amp.printCurrentAmpValues();">Show current settings in console</button>
-                    <button  id="toggleGuitarIn" style="position:absolute;left:570px;top:300px" class="pulse"  type="button" onclick="toggleGuitarInput(event)">Guitar input: <span style='color:red;'>NOT ACTIVATED</span>, click to toggle on/off!</button>
+                    <button  id="toggleGuitarIn" style="position:absolute;left:570px;top:300px" class="pulse"  type="button" >Guitar input: <span style='color:red;'>NOT ACTIVATED</span>, click to toggle on/off!</button>
                     <webaudio-knob id="Knob9"     midilearn="true" style="position:absolute;left:570px;top:350px" src="img/Prophet.png" value="1" default="1" min="0" max="10" step="0.1" diameter="49" sprites="99" tooltip="InputGain"></webaudio-knob>
 
                     <canvas id="inputSignalCanvas" style="position:absolute;left:630px;top:350px" width=150 height=50></canvas>
@@ -224,12 +226,21 @@
         <div class="events" id="events" style="background:rgba(128,128,255,0.5);overflow:scroll"></div>
 
         <script type="text/javascript">
+            // toggle guitar switch
+            var guitarInputSwitch = document.querySelector("#toggleGuitarIn");
+            guitarInputSwitch.addEventListener("click", function (e) {
+                if (amp !== undefined) {
+                    amp.toggleGuitarInput(e);
+                }
+            });
+
             // Binding avec le vrai ampli
             // Volume
             var volumeOutputPreAmp = document.querySelector("#Knob1");
             volumeOutputPreAmp.addEventListener("change", function (evt) {
-                if(amp !== undefined)
+                if(amp !== undefined) {
                     amp.changeOutputGain(evt.target.value);
+                }
             });
 
             // Master Volume
@@ -274,7 +285,7 @@
                     amp.changeReverbGain(evt.target.value);
             });
 
-            // Presence 
+            // Presence
             var presence = document.querySelector("#Knob8");
             presence.addEventListener("change", function (evt) {
                 if(amp !== undefined)
@@ -313,7 +324,7 @@
             var onOff = document.querySelector("#switch1");
             onOff.addEventListener("change", function (evt) {
                 if(amp === undefined) return;
-                
+
                 var state = {};
                 if (evt.target.value == 1) {
                     state.checked = false;
